@@ -5,6 +5,8 @@ import Footer from './Footer';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Container, Row, Col } from 'react-native-flex-grid';
 import styles from '../style/style';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 import {
     NBR_OF_DICES,
@@ -15,29 +17,20 @@ import {
     BONUS_POINTS_LIMIT,
     SCOREBOARD_KEY,
 } from './Game';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 let board = [];
 
-
-
-export default Gameboard = (navigation, route) => {
+export default function Gameboard() {
+    const navigation = useNavigation();
+    const route = useRoute();
 
     const [nbrOfThrowsLeft, setNbrOfThrowsLeft] = useState(NBR_OF_THROWS);
     const [status, setStatus] = useState('Throw dices.');
     const [gameEndStatus, setGameEndStatus] = useState(false);
-    // Which dices are chosen?
-    const [selectedDices, setSelectedDices] =
-        useState(new Array(NBR_OF_DICES).fill(false));
-    // Value of dices
-    const [diceSpots, setDiceSpots] =
-        useState(new Array(NBR_OF_DICES).fill(0));
-    // Which dices values are chosen in points?
-    const [selectedDicePoints, setSelectedDicePoints] =
-        useState(new Array(MAX_SPOT).fill(0));
-    // Sum of chosen dices
-    const [dicePointsTotal, setDicePointsTotal]
-        = useState(new Array(MAX_SPOT).fill(0));
+    const [selectedDices, setSelectedDices] = useState(new Array(NBR_OF_DICES).fill(false));
+    const [diceSpots, setDiceSpots] = useState(new Array(NBR_OF_DICES).fill(0));
+    const [selectedDicePoints, setSelectedDicePoints] = useState(new Array(MAX_SPOT).fill(0));
+    const [dicePointsTotal, setDicePointsTotal] = useState(new Array(MAX_SPOT).fill(0));
     const [playerName, setPlayerName] = useState('');
     const [scores, setScores] = useState([]);
 
@@ -47,11 +40,10 @@ export default Gameboard = (navigation, route) => {
         }
     }, []);
 
-  
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
             getScoreboardData();
-        })
+        });
         return unsubscribe;
     }, [navigation]);
 
@@ -77,12 +69,12 @@ export default Gameboard = (navigation, route) => {
     const savePlayerPoints = async () => {
         const newKey = scores.length + 1;
         const playerPoints = {
-        
+
             //do this later wip
             key: newKey,
             name: playerName,
-            date: currentDate, 
-            time: currentTime, 
+            date: currentDate,
+            time: currentTime,
             points: 0   // return points of the player 
         }
         try {
@@ -160,11 +152,11 @@ export default Gameboard = (navigation, route) => {
     }
 
     function getDiceColor(i) {
-        return selectedDices[i] ? "black" : "steelblue";
+        return selectedDices[i] ? "black" : "red";
     }
 
     function getDicePointsColor(i) {
-        return (selectedDicePoints[i] && !gameEndStatus) ? "black" : "steelblue";
+        return (selectedDicePoints[i] && !gameEndStatus) ? "black" : "red";
     }
 
     function getSpotTotal(i) {
@@ -175,51 +167,81 @@ export default Gameboard = (navigation, route) => {
         if (nbrOfThrowsLeft === 0) {
             let selectedPoints = [...selectedDicePoints];
             let points = [...dicePointsTotal];
+    
             if (!selectedPoints[i]) {
                 selectedPoints[i] = true;
-                let nbrOfDices =
-                    diceSpots.reduce((total, x) => (x === (i + 1) ? total + 1 : total), 0);
+                let nbrOfDices = diceSpots.reduce((total, x) => (x === (i + 1) ? total + 1 : total), 0);
                 points[i] = nbrOfDices * (i + 1);
-            }
-            else {
+    
+                // Save points to savedPoints
+                let updatedSavedPoints = [...savedPoints];
+                updatedSavedPoints[i] = points[i]; 
+                setSavedPoints(updatedSavedPoints);
+    
+                // Check if game ends after selecting points
+                if (selectedPoints.every((point) => point)) {
+                    setStatus("All points selected! Click 'Start New Round' to play again.");
+                }
+            } else {
                 setStatus("You already selected points for " + (i + 1));
                 return points[i];
             }
+    
             setDicePointsTotal(points);
             setSelectedDicePoints(selectedPoints);
             return points[i];
+        } else {
+            setStatus("You must throw dices " + NBR_OF_THROWS + " times before setting points.");
         }
-
-        else {
-            setStatus("Throw " + NBR_OF_THROWS + " times before setting points.");
-        }
-    }
+    };
 
     const throwDices = () => {
-        let spots = [...diceSpots];
-        for (let i = 0; i < NBR_OF_DICES; i++) {
-            if (!selectedDices[i]) {
-                let randomNumber = Math.floor(Math.random() * 6 + 1);
-                board[i] = 'dice-' + randomNumber;
-                spots[i] = randomNumber;
+        if (nbrOfThrowsLeft > 0) {
+            let spots = [...diceSpots];
+            for (let i = 0; i < NBR_OF_DICES; i++) {
+                if (!selectedDices[i]) {
+                    let randomNumber = Math.floor(Math.random() * 6 + 1);
+                    board[i] = 'dice-' + randomNumber;
+                    spots[i] = randomNumber;
+                }
             }
+            setNbrOfThrowsLeft(nbrOfThrowsLeft - 1);
+            setDiceSpots(spots);
+            setStatus('Select and throw dices again');
+        } else {
+            setStatus(" Choose your points first.");
         }
-        setNbrOfThrowsLeft(nbrOfThrowsLeft - 1);
-        setDiceSpots(spots);
-        setStatus('Select and throw dices again');
-    }
+    };
+
+ // Reset game states
+
+ // Save points for the next round
+
+ const [savedPoints, setSavedPoints] = useState(Array(MAX_SPOT).fill(null)); 
+
+    const startNewRound = () => {
+        
+        setNbrOfThrowsLeft(NBR_OF_THROWS);
+        setSelectedDices(Array(NBR_OF_DICES).fill(false)); 
+        setSelectedDicePoints(Array(MAX_SPOT).fill(false)); 
+        setDiceSpots(Array(NBR_OF_DICES).fill(0)); 
+        setStatus("New round started. Throw your dices!");
+    };
 
     return (
         <>
             <Header />
-            <View>
+            <View style={styles.gameboard}>
                 <Container>
                     <Row>{dicesRow}</Row>
                 </Container>
-                <Text>Throws left: {nbrOfThrowsLeft}</Text>
-                <Text>{status}</Text>
-                <Pressable onPress={() => throwDices()}>
-                    <Text>Throw Dices!</Text>
+                <Text style={styles.gameinfo}>Throws left: {nbrOfThrowsLeft}</Text>
+                <Text style={styles.gameinfo}>{status}</Text>
+                <Pressable style={styles.button} onPress={() => throwDices()}>
+                    <Text style={styles.buttonText}>Throw Dices!</Text>
+                </Pressable>
+                <Pressable onPress={startNewRound}>
+                    <Text style={styles.button}>Start New Round</Text>
                 </Pressable>
                 <Container>
                     <Row>{pointsRow}</Row>
@@ -227,12 +249,12 @@ export default Gameboard = (navigation, route) => {
                 <Container>
                     <Row>{pointsToSelectRow}</Row>
                 </Container>
-                <Text>Player: {playerName}</Text>
-                <Pressable onPress={() => savePlayerPoints()}> 
-                <Text>Save points</Text>
+                <Text style={styles.gameinfo}>Player: {playerName}</Text>
+                <Pressable style={styles.button} onPress={() => savePlayerPoints()}>
+                    <Text style={styles.buttonText}>Save points</Text>
                 </Pressable>
             </View>
             <Footer />
         </>
-    )
+    );
 }

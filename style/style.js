@@ -3,20 +3,20 @@ import { StyleSheet } from 'react-native';
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff'
+    backgroundColor: '#0A3D26',
   },
   header: {
     marginTop: 30,
-    backgroundColor: 'skyblue',
-    flexDirection: 'row'
+    backgroundColor: '#007A33',
+    flexDirection: 'row',
   },
   footer: {
     marginTop: 20,
-    backgroundColor: 'skyblue',
-    flexDirection: 'row'
+    backgroundColor: '#007A33',
+    flexDirection: 'row',
   },
   title: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     flex: 1,
     fontSize: 23,
@@ -24,7 +24,7 @@ export default StyleSheet.create({
     margin: 10,
   },
   author: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     flex: 1,
     fontSize: 15,
@@ -32,35 +32,58 @@ export default StyleSheet.create({
     margin: 10,
   },
   gameboard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#0A3D26',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   gameinfo: {
-    backgroundColor: '#fff',
+    backgroundColor: '#0A3D26',
     textAlign: 'center',
     justifyContent: 'center',
     fontSize: 18,
+    color: '#000000',
   },
   item: {
     margin: 15,
-    padding: 5
+    padding: 5,
   },
   flex: {
-    flexDirection: "row"
+    flexDirection: "row",
   },
   button: {
     margin: 30,
     flexDirection: "row",
     padding: 10,
-    backgroundColor: "#73CED6",
+    backgroundColor: "#FF4C4C",
     width: 150,
     borderRadius: 15,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   buttonText: {
-    color:"#2B2B52",
-    fontSize: 20
-  }
+    color: "#2B2B52",
+    fontSize: 20,
+  },
+
+  // New styles for the Home component
+  textInput: {
+    backgroundColor: '#fff',
+    borderColor: 'red',
+    borderWidth: 2,
+    borderRadius: 10,
+    padding: 10,
+    marginVertical: 10,
+    color: '#000',
+  },
+  infoText: {
+    color: '#fff',
+    fontSize: 18,
+    marginVertical: 10,
+  },
+  rulesText: {
+    color: '#fff',
+    fontSize: 16,
+    marginVertical: 10,
+  },
+
 });

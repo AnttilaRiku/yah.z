@@ -18,6 +18,9 @@ import {
     SCOREBOARD_KEY,
 } from './Game';
 
+
+// WIP: GAME-END Does not work properly, also the start new round does not work properly (player can cheat)
+
 let board = [];
 
 export default function Gameboard() {
@@ -33,6 +36,7 @@ export default function Gameboard() {
     const [dicePointsTotal, setDicePointsTotal] = useState(new Array(MAX_SPOT).fill(0));
     const [playerName, setPlayerName] = useState('');
     const [scores, setScores] = useState([]);
+    const [pointsChosen, setPointsChosen] = useState(false);
 
     useEffect(() => {
         if (playerName === '' && route.params?.player) {
@@ -164,7 +168,7 @@ export default function Gameboard() {
     }
 
     const chooseDicePoints = (i) => {
-        if (nbrOfThrowsLeft === 0) {
+        if (nbrOfThrowsLeft === 0 && !pointsChosen) {
             let selectedPoints = [...selectedDicePoints];
             let points = [...dicePointsTotal];
     
@@ -173,29 +177,42 @@ export default function Gameboard() {
                 let nbrOfDices = diceSpots.reduce((total, x) => (x === (i + 1) ? total + 1 : total), 0);
                 points[i] = nbrOfDices * (i + 1);
     
-                // Save points to savedPoints
-                let updatedSavedPoints = [...savedPoints];
-                updatedSavedPoints[i] = points[i]; 
-                setSavedPoints(updatedSavedPoints);
+                setDicePointsTotal(points);
+                setSelectedDicePoints(selectedPoints);
+                setPointsChosen(true); // Mark points as chosen
     
-                // Check if game ends after selecting points
-                if (selectedPoints.every((point) => point)) {
-                    setStatus("All points selected! Click 'Start New Round' to play again.");
+                calculateTotalPoints();
+    
+                // Check for game over condition DOES NOT WORK
+                if (selectedPoints.every(point => point )) { 
+                    setGameEndStatus(true);
+                    setStatus("Game Over! You've selected all points.");
                 }
             } else {
                 setStatus("You already selected points for " + (i + 1));
-                return points[i];
             }
-    
-            setDicePointsTotal(points);
-            setSelectedDicePoints(selectedPoints);
-            return points[i];
+        } else if (pointsChosen) {
+            setStatus("You have already chosen points for this round.");
         } else {
-            setStatus("You must throw dices " + NBR_OF_THROWS + " times before setting points.");
+            setStatus("You must throw the dice " + NBR_OF_THROWS + " times before setting points.");
+        }
+    };
+    
+    // Function to check if all points have been selected
+    const checkGameEnd = (selectedPoints) => {
+        if (selectedPoints.every(point => point)) {
+            setGameEndStatus(true);
+            setStatus("Game Over! You've selected all points.");
         }
     };
 
     const throwDices = () => {
+
+        if (gameEndStatus) {
+            setStatus("The game is over. Please start a new game.");
+            return;
+        }
+
         if (nbrOfThrowsLeft > 0) {
             let spots = [...diceSpots];
             for (let i = 0; i < NBR_OF_DICES; i++) {
@@ -213,19 +230,62 @@ export default function Gameboard() {
         }
     };
 
- // Reset game states
+    //Check if bonus points are available
 
- // Save points for the next round
+    const [bonusAchieved, setBonusAchieved] = useState(false);
+    const [total, setTotal] = useState(0);
 
- const [savedPoints, setSavedPoints] = useState(Array(MAX_SPOT).fill(null)); 
+    function calculateTotalPoints() {
+        let totalPoints = dicePointsTotal.reduce((sum, points) => sum + points, 0);
+
+        // Check if the player is eligible for bonus points + Add bonus points
+        if (totalPoints >= BONUS_POINTS_LIMIT && !bonusAchieved) {
+            totalPoints += BONUS_POINTS;
+            setBonusAchieved(true);
+            setStatus("Congrats! You've earned a bonus of " + BONUS_POINTS + " points.");
+        }
+
+        setTotal(totalPoints);
+    }
+
+    useEffect(() => {
+        calculateTotalPoints();
+    }, [dicePointsTotal]);
+
+    // Check how many points are left for the possible bonus
+
+    const calculateBonusPointsRemaining = () => {
+        const currentTotal = dicePointsTotal.slice(0, 6).reduce((acc, points) => acc + points, 0);
+        const pointsLeftForBonus = BONUS_POINTS_LIMIT - currentTotal;
+        return pointsLeftForBonus > 0 ? pointsLeftForBonus : 0;
+    };
+
+
+    // This resets the round
+    const [savedPoints, setSavedPoints] = useState(Array(MAX_SPOT).fill(null));
 
     const startNewRound = () => {
-        
         setNbrOfThrowsLeft(NBR_OF_THROWS);
-        setSelectedDices(Array(NBR_OF_DICES).fill(false)); 
-        setSelectedDicePoints(Array(MAX_SPOT).fill(false)); 
-        setDiceSpots(Array(NBR_OF_DICES).fill(0)); 
-        setStatus("New round started. Throw your dices!");
+        setSelectedDices(Array(NBR_OF_DICES).fill(false));
+        setSelectedDicePoints(Array(MAX_SPOT).fill(false));
+        setDiceSpots(Array(NBR_OF_DICES).fill(0));
+        setStatus("New round started. Throw your dice!");
+        setPointsChosen(false);
+        setGameEndStatus(false);
+    };
+
+    // Resets the whole game 
+    const resetGame = () => {
+        setNbrOfThrowsLeft(NBR_OF_THROWS);
+        setSelectedDices(Array(NBR_OF_DICES).fill(false));
+        setSelectedDicePoints(Array(MAX_SPOT).fill(false));
+        setDiceSpots(Array(NBR_OF_DICES).fill(0));
+        setStatus("Game has been reset. Throw your dice!");
+        setPointsChosen(false);
+        setGameEndStatus(false);
+        setDicePointsTotal(Array(MAX_SPOT).fill(0)); 
+        setBonusAchieved(false); 
+        setTotal(0); 
     };
 
     return (
@@ -237,12 +297,20 @@ export default function Gameboard() {
                 </Container>
                 <Text style={styles.gameinfo}>Throws left: {nbrOfThrowsLeft}</Text>
                 <Text style={styles.gameinfo}>{status}</Text>
-                <Pressable style={styles.button} onPress={() => throwDices()}>
-                    <Text style={styles.buttonText}>Throw Dices!</Text>
-                </Pressable>
-                <Pressable onPress={startNewRound}>
-                    <Text style={styles.button}>Start New Round</Text>
-                </Pressable>
+                    {/* This button should only be visible when there are throws left */}
+                {nbrOfThrowsLeft > 0 && (
+                    <Pressable style={styles.button} onPress={() => throwDices()}>
+                        <Text style={styles.buttonText}>Throw Dices!</Text>
+                    </Pressable>
+                )}
+                {/* Start new round button is only visible when conditions are met (round is over) */}
+                {nbrOfThrowsLeft === 0 && (
+                    <Pressable onPress={startNewRound}>
+                        <Text style={styles.button}>Start New Round</Text>
+                    </Pressable>
+                )}
+                <Text style={styles.gameinfo}>Total: {total}</Text>
+                <Text style={styles.gameinfo}>You are {calculateBonusPointsRemaining()} points away from bonus</Text>
                 <Container>
                     <Row>{pointsRow}</Row>
                 </Container>
@@ -253,6 +321,11 @@ export default function Gameboard() {
                 <Pressable style={styles.button} onPress={() => savePlayerPoints()}>
                     <Text style={styles.buttonText}>Save points</Text>
                 </Pressable>
+            {gameEndStatus && (
+                <Pressable onPress={resetGame}>
+                    <Text style={styles.button}>Reset Game</Text>
+                </Pressable>
+            )}
             </View>
             <Footer />
         </>

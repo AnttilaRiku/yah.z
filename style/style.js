@@ -85,5 +85,38 @@ export default StyleSheet.create({
     fontSize: 16,
     marginVertical: 10,
   },
+//Scoreboard.js 
+  scoreboardContainer: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#0A3D26',
+  },
+  scoreboardItem: {
+    backgroundColor: '#007A33',
+    borderRadius: 10,
+    padding: 15,
+    marginVertical: 10,
+  },
+  playerName: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  scoreText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+  },
+  clearButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: '#FF4C4C',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  clearButtonText: {
+    color: '#2B2B52',
+    fontSize: 18,
+  },
 
 });

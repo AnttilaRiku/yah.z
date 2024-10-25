@@ -80,7 +80,7 @@ export default function Gameboard() {
             name: playerName,
             date: currentDate,
             time: currentTime,
-            points: 0   // return points of the player 
+            points: total  
         }
         try {
             const newScore = [...scores, playerPoints];

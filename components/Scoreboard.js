@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Text, View } from 'react-native';
+import { Text, View, FlatList, Pressable } from 'react-native';
 import Header from './Header';
 import Footer from './Footer';
 import { SCOREBOARD_KEY } from './Game';
 import styles from '../style/style';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 export default Scoreboard = ({ navigation }) => {
 
@@ -23,7 +24,7 @@ export default Scoreboard = ({ navigation }) => {
             if (jsonValue !== null) {
                 const tmpScores = JSON.parse(jsonValue);
                 //Sorting desc. order here by property values
-                setScores(tmpScores);
+                setScores(tmpScores.sort((a, b) => b.points - a.points));
                 console.log('Scoreboard: Read successful.');
                 console.log('Scoreboard: Number of scores: ' + tmpScores.length);
             }
@@ -44,11 +45,25 @@ export default Scoreboard = ({ navigation }) => {
     }
     return (
         <>
-            <Header />
-            <View>
-                <Text>Scoreboard will be here....</Text>
+        <Header />
+        <View style={styles.scoreboardContainer}>
+    <Text style={styles.title}>Scoreboard</Text>
+    <FlatList
+        data={scores}
+        keyExtractor={(item) => item.key.toString()}
+        renderItem={({ item }) => (
+            <View style={styles.scoreboardItem}>
+                <Text style={styles.playerName}>Player: {item.name}</Text>
+                <Text>Date: {item.date} - Time: {item.time}</Text>
+                <Text style={styles.scoreText}>Points: {item.points}</Text>
             </View>
-            <Footer />
-        </>
+        )}
+    />
+    <Pressable onPress={clearScoreboard} style={styles.clearButton}>
+        <Text style={styles.clearButtonText}>Clear Scoreboard</Text>
+    </Pressable>
+</View>
+        <Footer />
+    </>
     )
 }

@@ -37,6 +37,7 @@ export default function Gameboard() {
     const [playerName, setPlayerName] = useState('');
     const [scores, setScores] = useState([]);
     const [pointsChosen, setPointsChosen] = useState(false);
+    const [roundCount, setRoundCount] = useState(0);
 
     useEffect(() => {
         if (playerName === '' && route.params?.player) {
@@ -171,23 +172,20 @@ export default function Gameboard() {
         if (nbrOfThrowsLeft === 0 && !pointsChosen) {
             let selectedPoints = [...selectedDicePoints];
             let points = [...dicePointsTotal];
-    
+
             if (!selectedPoints[i]) {
                 selectedPoints[i] = true;
                 let nbrOfDices = diceSpots.reduce((total, x) => (x === (i + 1) ? total + 1 : total), 0);
-                points[i] = nbrOfDices * (i + 1);
-    
+                points[i] = nbrOfDices * (i + 1); // Calculate points for the selected spot
+
                 setDicePointsTotal(points);
                 setSelectedDicePoints(selectedPoints);
                 setPointsChosen(true); // Mark points as chosen
-    
+
                 calculateTotalPoints();
-    
-                // Check for game over condition DOES NOT WORK
-                if (selectedPoints.every(point => point )) { 
-                    setGameEndStatus(true);
-                    setStatus("Game Over! You've selected all points.");
-                }
+
+                // Check for game over condition
+                checkGameEnd(selectedPoints); // Check selectedPoints after updating
             } else {
                 setStatus("You already selected points for " + (i + 1));
             }
@@ -197,12 +195,12 @@ export default function Gameboard() {
             setStatus("You must throw the dice " + NBR_OF_THROWS + " times before setting points.");
         }
     };
-    
-    // Function to check if all points have been selected
+
     const checkGameEnd = (selectedPoints) => {
-        if (selectedPoints.every(point => point)) {
+        console.log("Checking game end condition.");
+        if (selectedPoints.every(point => point) || roundCount >= 5) {
             setGameEndStatus(true);
-            setStatus("Game Over! You've selected all points.");
+            setStatus("Game Over! You've completed all rounds.");
         }
     };
 
@@ -225,6 +223,8 @@ export default function Gameboard() {
             setNbrOfThrowsLeft(nbrOfThrowsLeft - 1);
             setDiceSpots(spots);
             setStatus('Select and throw dices again');
+            console.log("Dices thrown. Spots updated:", spots);
+            console.log("Throws left:", nbrOfThrowsLeft - 1);
         } else {
             setStatus(" Choose your points first.");
         }
@@ -261,31 +261,36 @@ export default function Gameboard() {
     };
 
 
-    // This resets the round
-    const [savedPoints, setSavedPoints] = useState(Array(MAX_SPOT).fill(null));
 
     const startNewRound = () => {
+        if (roundCount >= 5) {
+            console.log("Max rounds reached.");
+            return;
+        }
+        console.log(" Current round count: ", roundCount);
         setNbrOfThrowsLeft(NBR_OF_THROWS);
         setSelectedDices(Array(NBR_OF_DICES).fill(false));
         setSelectedDicePoints(Array(MAX_SPOT).fill(false));
         setDiceSpots(Array(NBR_OF_DICES).fill(0));
         setStatus("New round started. Throw your dice!");
         setPointsChosen(false);
-        setGameEndStatus(false);
+
+        setRoundCount(prevRound => prevRound + 1);
     };
 
     // Resets the whole game 
     const resetGame = () => {
+        setRoundCount(0);
         setNbrOfThrowsLeft(NBR_OF_THROWS);
         setSelectedDices(Array(NBR_OF_DICES).fill(false));
-        setSelectedDicePoints(Array(MAX_SPOT).fill(false));
+        setSelectedDicePoints(Array(MAX_SPOT).fill(false));   
         setDiceSpots(Array(NBR_OF_DICES).fill(0));
         setStatus("Game has been reset. Throw your dice!");
         setPointsChosen(false);
         setGameEndStatus(false);
-        setDicePointsTotal(Array(MAX_SPOT).fill(0)); 
-        setBonusAchieved(false); 
-        setTotal(0); 
+        setDicePointsTotal(Array(MAX_SPOT).fill(0));
+        setBonusAchieved(false);
+        setTotal(0);
     };
 
     return (
@@ -297,14 +302,14 @@ export default function Gameboard() {
                 </Container>
                 <Text style={styles.gameinfo}>Throws left: {nbrOfThrowsLeft}</Text>
                 <Text style={styles.gameinfo}>{status}</Text>
-                    {/* This button should only be visible when there are throws left */}
+                {/* This button should only be visible when there are throws left */}
                 {nbrOfThrowsLeft > 0 && (
                     <Pressable style={styles.button} onPress={() => throwDices()}>
                         <Text style={styles.buttonText}>Throw Dices!</Text>
                     </Pressable>
                 )}
-                {/* Start new round button is only visible when conditions are met (round is over) */}
-                {nbrOfThrowsLeft === 0 && (
+                {/* Start new round button is only visible when the round is over and points have been chosen */}
+                {!gameEndStatus && nbrOfThrowsLeft === 0 && pointsChosen && (
                     <Pressable onPress={startNewRound}>
                         <Text style={styles.button}>Start New Round</Text>
                     </Pressable>
@@ -321,13 +326,13 @@ export default function Gameboard() {
                 <Pressable style={styles.button} onPress={() => savePlayerPoints()}>
                     <Text style={styles.buttonText}>Save points</Text>
                 </Pressable>
-            {gameEndStatus && (
-                <Pressable onPress={resetGame}>
-                    <Text style={styles.button}>Reset Game</Text>
-                </Pressable>
-            )}
+                {gameEndStatus && (
+                    <Pressable onPress={resetGame} style={styles.button}>
+                        <Text style={styles.buttonText}>Reset Game</Text>
+                    </Pressable>
+                )}
             </View>
             <Footer />
         </>
     );
-}
+}    

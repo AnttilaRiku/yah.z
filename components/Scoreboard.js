@@ -11,14 +11,14 @@ export default Scoreboard = ({ navigation }) => {
 
     const [scores, setScores] = useState([]);
 
-    useEffect(( ) => {
+    useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
             getScoreboardData();
         })
         return unsubscribe;
     }, [navigation]);
 
-    const getScoreboardData = async() => {
+    const getScoreboardData = async () => {
         try {
             const jsonValue = await AsyncStorage.getItem(SCOREBOARD_KEY);
             if (jsonValue !== null) {
@@ -29,41 +29,41 @@ export default Scoreboard = ({ navigation }) => {
                 console.log('Scoreboard: Number of scores: ' + tmpScores.length);
             }
         }
-        catch(e) {
-            console.log('Scoreboard: Read error: ' + e );
+        catch (e) {
+            console.log('Scoreboard: Read error: ' + e);
         }
     }
 
-    const clearScoreboard = async() => {
+    const clearScoreboard = async () => {
         try {
             await AsyncStorage.removeItem(SCOREBOARD_KEY);
             setScores([]);
         }
-        catch(e) {
-            console.log('Scoreboard: Clear error: ' + e );
+        catch (e) {
+            console.log('Scoreboard: Clear error: ' + e);
         }
     }
     return (
         <>
-        <Header />
-        <View style={styles.scoreboardContainer}>
-    <Text style={styles.title}>Scoreboard</Text>
-    <FlatList
-        data={scores}
-        keyExtractor={(item) => item.key.toString()}
-        renderItem={({ item }) => (
-            <View style={styles.scoreboardItem}>
-                <Text style={styles.playerName}>Player: {item.name}</Text>
-                <Text>Date: {item.date} - Time: {item.time}</Text>
-                <Text style={styles.scoreText}>Points: {item.points}</Text>
+            <Header />
+            <View style={styles.scoreboardContainer}>
+                <Text style={styles.title}>Scoreboard</Text>
+                <FlatList
+                    data={scores}
+                    keyExtractor={(item) => item.key.toString()}
+                    renderItem={({ item }) => (
+                        <View style={styles.scoreboardItem}>
+                            <Text style={styles.playerName}>Player: {item.name}</Text>
+                            <Text>Date: {item.date} - Time: {item.time}</Text>
+                            <Text style={styles.scoreText}>Points: {item.points}</Text>
+                        </View>
+                    )}
+                />
+                <Pressable onPress={clearScoreboard} style={styles.clearButton}>
+                    <Text style={styles.clearButtonText}>Clear Scoreboard</Text>
+                </Pressable>
             </View>
-        )}
-    />
-    <Pressable onPress={clearScoreboard} style={styles.clearButton}>
-        <Text style={styles.clearButtonText}>Clear Scoreboard</Text>
-    </Pressable>
-</View>
-        <Footer />
-    </>
+            <Footer />
+        </>
     )
 }

@@ -75,12 +75,11 @@ export default function Gameboard() {
         const newKey = scores.length + 1;
         const playerPoints = {
 
-            //do this later wip
             key: newKey,
             name: playerName,
             date: currentDate,
             time: currentTime,
-            points: total  
+            points: total
         }
         try {
             const newScore = [...scores, playerPoints];
@@ -283,7 +282,7 @@ export default function Gameboard() {
         setRoundCount(0);
         setNbrOfThrowsLeft(NBR_OF_THROWS);
         setSelectedDices(Array(NBR_OF_DICES).fill(false));
-        setSelectedDicePoints(Array(MAX_SPOT).fill(false));   
+        setSelectedDicePoints(Array(MAX_SPOT).fill(false));
         setDiceSpots(Array(NBR_OF_DICES).fill(0));
         setStatus("Game has been reset. Throw your dice!");
         setPointsChosen(false);

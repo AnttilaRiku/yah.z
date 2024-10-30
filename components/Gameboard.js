@@ -18,9 +18,6 @@ import {
     SCOREBOARD_KEY,
 } from './Game';
 
-
-// WIP: GAME-END Does not work properly, also the start new round does not work properly (player can cheat)
-
 let board = [];
 
 export default function Gameboard() {
@@ -94,7 +91,6 @@ export default function Gameboard() {
         }
     }
 
-    // Dice row creation (Col)
     const dicesRow = [];
     for (let i = 0; i < NBR_OF_DICES; i++) {
         dicesRow.push(
@@ -113,7 +109,6 @@ export default function Gameboard() {
         );
     }
 
-    // Points row creation (Col)
     const pointsRow = [];
     for (let spot = 0; spot < MAX_SPOT; spot++) {
         pointsRow.push(
@@ -124,7 +119,6 @@ export default function Gameboard() {
         );
     }
 
-    // Row creation which tells you has points been chosen
     const pointsToSelectRow = [];
     for (let diceButton = 0; diceButton < MAX_SPOT; diceButton++) {
         pointsToSelectRow.push(
@@ -179,12 +173,12 @@ export default function Gameboard() {
 
                 setDicePointsTotal(points);
                 setSelectedDicePoints(selectedPoints);
-                setPointsChosen(true); // Mark points as chosen
+                setPointsChosen(true);
 
                 calculateTotalPoints();
 
                 // Check for game over condition
-                checkGameEnd(selectedPoints); // Check selectedPoints after updating
+                checkGameEnd(selectedPoints);
             } else {
                 setStatus("You already selected points for " + (i + 1));
             }
@@ -230,7 +224,6 @@ export default function Gameboard() {
     };
 
     //Check if bonus points are available
-
     const [bonusAchieved, setBonusAchieved] = useState(false);
     const [total, setTotal] = useState(0);
 
@@ -252,7 +245,6 @@ export default function Gameboard() {
     }, [dicePointsTotal]);
 
     // Check how many points are left for the possible bonus
-
     const calculateBonusPointsRemaining = () => {
         const currentTotal = dicePointsTotal.slice(0, 6).reduce((acc, points) => acc + points, 0);
         const pointsLeftForBonus = BONUS_POINTS_LIMIT - currentTotal;
@@ -301,13 +293,13 @@ export default function Gameboard() {
                 </Container>
                 <Text style={styles.gameinfo}>Throws left: {nbrOfThrowsLeft}</Text>
                 <Text style={styles.gameinfo}>{status}</Text>
-                {/* This button should only be visible when there are throws left */}
+                {/* This button is only visible in the start or in middle of a current round */}
                 {nbrOfThrowsLeft > 0 && (
                     <Pressable style={styles.button} onPress={() => throwDices()}>
                         <Text style={styles.buttonText}>Throw Dices!</Text>
                     </Pressable>
                 )}
-                {/* Start new round button is only visible when the round is over and points have been chosen */}
+                {/* Start new round button is only visible when the round is over*/}
                 {!gameEndStatus && nbrOfThrowsLeft === 0 && pointsChosen && (
                     <Pressable onPress={startNewRound}>
                         <Text style={styles.button}>Start New Round</Text>

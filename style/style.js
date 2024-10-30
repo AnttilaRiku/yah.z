@@ -65,7 +65,7 @@ export default StyleSheet.create({
     fontSize: 20,
   },
 
-  // New styles for the Home component
+  // Home Component
   textInput: {
     backgroundColor: '#fff',
     borderColor: 'red',
@@ -85,7 +85,7 @@ export default StyleSheet.create({
     fontSize: 16,
     marginVertical: 10,
   },
-//Scoreboard.js 
+  //Scoreboard.js 
   scoreboardContainer: {
     flex: 1,
     padding: 20,

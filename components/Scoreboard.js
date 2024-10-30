@@ -23,7 +23,6 @@ export default Scoreboard = ({ navigation }) => {
             const jsonValue = await AsyncStorage.getItem(SCOREBOARD_KEY);
             if (jsonValue !== null) {
                 const tmpScores = JSON.parse(jsonValue);
-                //Sorting desc. order here by property values
                 setScores(tmpScores.sort((a, b) => b.points - a.points));
                 console.log('Scoreboard: Read successful.');
                 console.log('Scoreboard: Number of scores: ' + tmpScores.length);

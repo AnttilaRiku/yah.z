@@ -47,8 +47,8 @@ export default Home = ({ navigation }) => {
                         <Text style={styles.rulesText}>Rules of the game:</Text>
                         <Text style={styles.rulesText} multiline>
                             THE GAME: Upper section of the classic Yahtzee dice game. You have {NBR_OF_DICES} dices and for every dice, you have {NBR_OF_THROWS} throws.
-                            After each throw, you can keep dices to get same dice spot counts as many as possible. In the end of the turn, you must select your points from 
-                        {MIN_SPOT} to {MAX_SPOT}. Game ends when all points have been selected. The order for selecting those is free.
+                            After each throw, you can keep dices to get same dice spot counts as many as possible. In the end of the turn, you must select your points from
+                            {MIN_SPOT} to {MAX_SPOT}. Game ends when all points have been selected. The order for selecting those is free.
                         </Text>
                         <Text style={styles.infoText}>Good luck, {playerName}</Text>
                         <Pressable
